@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boiling Points of Homologous Series</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky lab bench on the left, exam booklet on the right; stacks on narrow screens.
+   Palette: lab-glass teal accent with a hotplate amber, on a cool paper grey. */
+:root{
+  --paper:#f3f5f9;
+  --sheet:#ffffff;
+  --ink:#16203a;
+  --muted:#5a6580;
+  --rule:#d8deea;
+  --cobalt:#0d6e6a;
+  --cobalt-soft:#dff2f0;
+  --pink:#c2571a;
+  --pink-soft:#fdeee3;
+  --good:#1d7a4f;
+  --warn:#a35d00;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f1424; --sheet:#171e33; --ink:#e8ecf7; --muted:#9aa5c2; --rule:#2b3552;
+    --cobalt:#4fd1c5; --cobalt-soft:#173b3a; --pink:#f5a06a; --pink-soft:#3b2618;
+    --good:#5fd39b; --warn:#f0b35a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f1424; --sheet:#171e33; --ink:#e8ecf7; --muted:#9aa5c2; --rule:#2b3552;
+  --cobalt:#4fd1c5; --cobalt-soft:#173b3a; --pink:#f5a06a; --pink-soft:#3b2618;
+  --good:#5fd39b; --warn:#f0b35a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15.5px;line-height:1.55}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cobalt);outline-offset:2px}
+sub,sup{line-height:0}
+
+/* Header */
+.top{background:var(--sheet);border-bottom:1px solid var(--rule)}
+.top-inner{max-width:1360px;margin:0 auto;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.brand{display:flex;flex-direction:column;gap:2px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.brand h1{font-size:24px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.field-inline{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
+.field-inline input{border:1px solid var(--rule);background:var(--paper);border-radius:6px;padding:6px 10px;min-width:180px}
+.chip{font-size:13px;border:1px solid var(--rule);border-radius:999px;padding:4px 12px;background:var(--paper);white-space:nowrap}
+.chip strong{font-family:var(--font-mono);font-weight:500}
+.timer{font-family:var(--font-mono)}
+.timer.low{color:var(--warn);border-color:var(--warn)}
+
+/* Main grid */
+.wrap{max-width:1360px;margin:0 auto;padding:20px;display:grid;grid-template-columns:minmax(340px,440px) 1fr;gap:20px;align-items:start}
+@media (max-width:980px){.wrap{grid-template-columns:1fr}}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px}
+.bench{position:sticky;top:12px;padding:18px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:980px){.bench{position:static;max-height:none}}
+.bench h2{font-size:19px}
+.small{font-size:13px;color:var(--muted)}
+
+/* Apparatus */
+.apparatus{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}
+.bath{position:relative;height:170px;border:2px solid var(--rule);border-top:none;border-radius:0 0 14px 14px;background:linear-gradient(to top,var(--cobalt-soft),transparent 85%);display:flex;justify-content:center;align-items:flex-end;padding-bottom:10px}
+.bath .label{position:absolute;top:4px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+.tube{width:34px;height:130px;border:2px solid var(--muted);border-top:none;border-radius:0 0 17px 17px;position:relative;overflow:hidden;background:transparent}
+.tube .liquid{position:absolute;left:0;right:0;bottom:0;height:78%;transition:background-color .4s linear}
+.readouts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.readout{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;background:var(--paper)}
+.readout .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.readout .v{font-family:var(--font-mono);font-size:22px;font-variant-numeric:tabular-nums}
+.readout .u{font-size:12px;color:var(--muted)}
+.readout.lcd{background:#0d1a12;border-color:#24402e}
+.readout.lcd .k{color:#83b897}
+.readout.lcd .v{color:#7dffa8}
+.readout.lcd .u{color:#83b897}
+
+.controls{display:flex;flex-direction:column;gap:10px}
+.ctrl label{display:flex;justify-content:space-between;font-size:14px;font-weight:500}
+.ctrl label span{font-family:var(--font-mono);font-weight:400;color:var(--muted)}
+.ctrl input[type=range]{width:100%;accent-color:var(--cobalt)}
+.ctrl select{width:100%;border:1px solid var(--rule);border-radius:6px;padding:7px 8px;background:var(--sheet)}
+.fixed{font-size:13px;color:var(--muted);border-left:3px solid var(--rule);padding-left:10px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--rule);background:var(--sheet);border-radius:7px;padding:8px 14px;cursor:pointer;font-weight:500;font-size:14px}
+.btn:hover{border-color:var(--cobalt)}
+.btn.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#0f1424}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#0f1424}}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.clock{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+.log{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.log th,.log td{border-bottom:1px solid var(--rule);padding:4px 6px;text-align:right}
+.log th{font-weight:600;color:var(--muted);font-size:12px}
+.log td:first-child,.log th:first-child{text-align:left}
+.logbox{max-height:180px;overflow:auto;border:1px solid var(--rule);border-radius:8px}
+.empty{padding:10px;font-size:13px;color:var(--muted)}
+
+/* Booklet */
+.booklet{padding:0;overflow:hidden}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--rule);padding:0 12px;overflow-x:auto;background:var(--sheet)}
+.tab{border:none;background:none;padding:13px 14px 11px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--cobalt)}
+.tab .tm{font-family:var(--font-mono);font-weight:400;font-size:12px;margin-left:6px}
+.page{padding:22px 26px 30px;display:none}
+.page.on{display:block}
+@media (max-width:560px){.page{padding:18px 16px 24px}}
+.page > * + *{margin-top:18px}
+.prose{max-width:72ch}
+.prose p{margin:0 0 10px}
+.source{border:1px solid var(--rule);border-radius:10px;padding:16px 18px;background:var(--paper)}
+.source h3{font-size:16px;margin-bottom:8px}
+.eqn{font-family:var(--font-mono);font-size:15px;padding:12px 14px;border-radius:8px;background:var(--sheet);border:1px solid var(--rule);overflow-x:auto;white-space:nowrap}
+.eqn .p{color:var(--pink);font-weight:500}
+.eqn .b{color:var(--cobalt);font-weight:500}
+.swatches{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:14px}
+.sw{display:flex;align-items:center;gap:8px}
+.sw i{width:18px;height:18px;border-radius:50%;display:inline-block;border:1px solid var(--rule)}
+.hazard{border-left:4px solid var(--warn);padding:8px 12px;background:var(--sheet);border-radius:0 8px 8px 0;font-size:14px}
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;font-size:13.5px}
+.terms div{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;background:var(--sheet)}
+.terms b{font-family:var(--font-display)}
+
+.q{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direction:column;gap:10px}
+.q:first-of-type{border-top:none;padding-top:0}
+.qhead{display:flex;gap:12px;align-items:baseline;justify-content:space-between}
+.qnum{font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--cobalt);min-width:34px}
+.qtext{flex:1}
+.qtext p{margin:0 0 6px}
+.cmd{font-weight:700;text-transform:none}
+.marks{font-family:var(--font-mono);font-size:13px;border:1px solid var(--rule);border-radius:6px;padding:1px 8px;white-space:nowrap;background:var(--paper)}
+textarea{width:100%;border:1px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--paper);resize:vertical;line-height:1.5}
+textarea:focus{background:var(--sheet)}
+textarea[readonly]{opacity:.85}
+.wc{font-size:12px;color:var(--muted);text-align:right;margin-top:-6px}
+
+/* Data table */
+.dt-wrap{overflow-x:auto}
+.dt{border-collapse:collapse;min-width:560px;width:100%;font-variant-numeric:tabular-nums}
+.dt th,.dt td{border:1px solid var(--rule);padding:0}
+.dt input{width:100%;border:none;background:transparent;padding:7px 8px;text-align:center;font-family:var(--font-mono);font-size:14px}
+.dt thead input{font-family:var(--font-body);font-weight:600;font-size:13px}
+.dt thead tr.group th{font-size:12px;color:var(--muted);padding:5px;background:var(--paper);font-weight:600}
+.dt td.mean{background:var(--cobalt-soft)}
+.dt input:focus{background:var(--sheet)}
+
+.graphbox{border:1px solid var(--rule);border-radius:10px;padding:12px;background:var(--sheet)}
+.graph-ctrls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+@media (max-width:560px){.graph-ctrls{grid-template-columns:1fr}}
+.graph-ctrls label{font-size:13px;font-weight:500;display:flex;flex-direction:column;gap:4px}
+.graph-ctrls input,.graph-ctrls select{border:1px solid var(--rule);border-radius:6px;padding:6px 8px;background:var(--paper)}
+.checkline{flex-direction:row !important;align-items:center;gap:8px !important}
+canvas{width:100%;display:block}
+
+/* Mark scheme */
+.ms{display:none;border:1px solid var(--good);border-radius:10px;padding:12px 14px;background:color-mix(in srgb,var(--good) 7%,var(--sheet))}
+body.marking .ms{display:block}
+.ms h4{margin:0 0 6px;font-family:var(--font-display);font-size:14px;color:var(--good);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ms ul{margin:0 0 8px;padding-left:20px;font-size:14px}
+.ms .model{font-size:13.5px;border-top:1px dashed var(--rule);padding-top:8px;color:var(--muted)}
+.ms .model b{color:var(--ink)}
+.award{display:flex;align-items:center;gap:6px;font-family:var(--font-body);font-size:13px;color:var(--ink)}
+.award input{width:56px;border:1px solid var(--rule);border-radius:6px;padding:4px 6px;text-align:center;background:var(--sheet);font-family:var(--font-mono)}
+
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.score{border:1px solid var(--rule);border-radius:10px;padding:14px;background:var(--paper)}
+.score .k{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.score .v{font-family:var(--font-display);font-size:30px;font-weight:700}
+.score .v small{font-size:15px;color:var(--muted);font-weight:500}
+.level{display:inline-block;margin-top:4px;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--cobalt-soft);color:var(--cobalt);font-weight:600}
+.bands{width:100%;border-collapse:collapse;font-size:13.5px}
+.bands th,.bands td{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}
+.bands th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.notice{font-size:14px;padding:10px 14px;border-radius:8px;background:var(--cobalt-soft);border:1px solid var(--rule)}
+.notice.ok{background:color-mix(in srgb,var(--good) 12%,var(--sheet))}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.on{opacity:1}
+.pinrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pinrow input{border:1px solid var(--rule);border-radius:6px;padding:7px 10px;background:var(--paper);width:160px}
+
+/* Physical scene */
+.scene{width:100%;border:1px solid var(--rule);border-radius:10px;background:var(--paper)}
+.compare{display:flex;flex-direction:column;gap:8px;border:1px solid var(--rule);border-radius:10px;padding:12px;background:#fbfbfd}
+.compare .ttl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#5a6580;font-weight:600}
+.cmprow{display:flex;gap:12px;align-items:stretch}
+.heldtube{width:44px;flex:none;border:2px solid #9aa3b8;border-top:none;border-radius:0 0 22px 22px;height:96px;position:relative;overflow:hidden;background:#fff}
+.heldtube div{position:absolute;left:0;right:0;bottom:0;height:80%;transition:background-color .4s linear}
+.chart{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.chart .s{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--font-mono);font-size:12px;color:#16203a}
+.chart .s i{display:block;width:100%;height:68px;border-radius:4px;border:1px solid rgba(0,0,0,.08)}
+.chart-cap{display:flex;justify-content:space-between;font-size:11.5px;color:#5a6580}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+
+/* Organic lab additions */
+.sample-card{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:1px solid var(--rule);border-radius:10px;padding:12px;background:var(--paper)}
+.sample-card .cmpd{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;border-top:1px dashed var(--rule);padding-top:8px}
+.cmpd #cmpdName{font-family:var(--font-display);font-weight:700;font-size:18px}
+.formula{font-family:var(--font-mono);font-size:15px;color:var(--cobalt)}
+.statusline{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.obs{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--rule)}
+.obs.boil{background:var(--pink-soft);border-color:var(--pink);color:var(--pink)}
+.obs.bump{background:var(--pink);border-color:var(--pink);color:#fff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+@media (max-width:440px){.two,.sample-card{grid-template-columns:1fr}}
+.checkctrl label{font-weight:500;font-size:14px;align-items:center;padding-bottom:6px}
+.checkctrl input{accent-color:var(--cobalt);width:16px;height:16px}
+.sol{display:flex;gap:16px;align-items:center}
+.soltube{width:40px;height:110px;flex:none;border:2px solid #9aa3b8;border-top:none;border-radius:0 0 20px 20px;position:relative;overflow:hidden;background:#fff}
+.soltube .water{position:absolute;left:0;right:0;bottom:0;height:62%;background:rgba(170,210,235,.55);transition:all .6s ease}
+.soltube .org{position:absolute;left:0;right:0;height:0;background:rgba(245,214,140,.75);border-bottom:2px solid rgba(120,95,40,.55);transition:all .6s ease}
+.sol-side{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.legend-row{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:13px;margin-bottom:10px}
+.legend-row label{display:flex;align-items:center;gap:6px;font-weight:500}
+.legend-row i{display:inline-block;width:18px;height:3px;border-radius:2px}
+.graph-ctrls .wide{grid-column:1/-1}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="eyebrow">MYP Sciences · Organic chemistry · Criteria B &amp; C practice</span>
+      <h1>Boiling Points of Homologous Series</h1>
+    </div>
+    <div class="meta">
+      <div class="field-inline"><label for="studentName">Name</label><input id="studentName" placeholder="Your name" autocomplete="off"></div>
+      <div class="field-inline"><label for="studentClass">Class</label><input id="studentClass" placeholder="e.g. MYP 5A" style="min-width:110px" autocomplete="off"></div>
+      <span class="chip">Total <strong>32</strong> marks</span>
+      <button class="chip timer" id="timerBtn" type="button" title="Start or pause a 60-minute exam timer">⏱ <strong id="timerTxt">60:00</strong></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- LAB BENCH -->
+  <section class="panel bench" aria-label="Virtual lab">
+    <div>
+      <h2>Virtual lab bench</h2>
+      <p class="small" style="margin:4px 0 0">A boiling tube of liquid sits in an electrically heated oil bath. Watch for steady boiling and read the glass thermometer in the liquid. Time runs 20× faster than real time.</p>
+    </div>
+
+    <div class="sample-card">
+      <div class="ctrl">
+        <label for="seriesSel">Homologous series</label>
+        <select id="seriesSel">
+          <option value="alkane">Alkanes</option>
+          <option value="alkene">Alkenes</option>
+          <option value="alcohol" selected>Alcohols</option>
+          <option value="acid">Carboxylic acids</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <label for="nSel">Number of carbon atoms</label>
+        <select id="nSel"></select>
+      </div>
+      <div class="cmpd"><span id="cmpdName">ethanol</span><span id="cmpdFormula" class="formula">C₂H₅OH</span></div>
+    </div>
+
+    <canvas class="scene" id="scene" height="300" aria-label="Oil bath on a hotplate with a boiling tube and thermometer; magnified thermometer scale on the right"></canvas>
+    <div class="statusline"><span class="clock" id="clock">Heating time: 0 min 00 s</span><span class="obs" id="obs">Liquid is still</span></div>
+
+    <div class="controls">
+      <div class="two">
+        <div class="ctrl">
+          <label for="rateSel">Heating rate</label>
+          <select id="rateSel">
+            <option value="2">Slow · 2 °C/min</option>
+            <option value="5" selected>Medium · 5 °C/min</option>
+            <option value="15">Fast · 15 °C/min</option>
+          </select>
+        </div>
+        <div class="ctrl checkctrl">
+          <label for="chips" style="justify-content:flex-start;gap:8px"><input type="checkbox" id="chips" checked> Anti-bumping granules in the tube</label>
+        </div>
+      </div>
+      <div class="fixed">All compounds are unbranched; alkenes have C=C at carbon 1 and alcohols have –OH at carbon 1. Each tube holds 2.0 cm³ of liquid. The oil bath can reach 250 °C. Room temperature is 22 °C and the air pressure is 101 kPa.</div>
+      <div class="btnrow">
+        <button class="btn primary" id="setupBtn" type="button">Set up a fresh tube</button>
+        <button class="btn" id="heatBtn" type="button">Switch heater on</button>
+      </div>
+      <p class="small" id="benchMsg" style="margin:0">Choose a compound, set up a fresh tube, then switch the heater on.</p>
+    </div>
+
+    <div class="compare" aria-label="Solubility test">
+      <span class="ttl">Solubility test: 1 cm³ of the compound shaken with 5 cm³ of water</span>
+      <div class="sol">
+        <div class="soltube" id="solTube" aria-hidden="true"><div class="water" id="solWater"></div><div class="org" id="solOrg"></div></div>
+        <div class="sol-side">
+          <button class="btn" id="solBtn" type="button">Add, shake and let settle</button>
+          <p class="small" id="solMsg" style="margin:0;color:#5a6580">Look closely: one clear layer, or two layers with a boundary?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKLET -->
+  <section class="panel booklet" aria-label="Question booklet">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-info" aria-controls="page-info" aria-selected="true">Source information</button>
+      <button class="tab" role="tab" id="tab-b" aria-controls="page-b" aria-selected="false">Criterion B<span class="tm">/16</span></button>
+      <button class="tab" role="tab" id="tab-c" aria-controls="page-c" aria-selected="false">Criterion C<span class="tm">/16</span></button>
+      <button class="tab" role="tab" id="tab-r" aria-controls="page-r" aria-selected="false">Submit &amp; results</button>
+    </div>
+
+    <!-- INFO -->
+    <div class="page on" id="page-info" role="tabpanel" aria-labelledby="tab-info">
+      <div class="prose">
+        <h2 style="font-size:22px;margin-bottom:8px">How does molecular structure affect boiling point?</h2>
+        <p>Read this information before you answer. You will design an investigation into the boiling points of one homologous series (Criterion B), carry it out in the virtual lab, then process and evaluate your results (Criterion C). Write all answers in the boxes. Your work saves automatically in this browser.</p>
+      </div>
+
+      <div class="source">
+        <h3>Source 1: Four homologous series</h3>
+        <div class="dt-wrap">
+        <table class="bands">
+          <thead><tr><th>Series</th><th>General formula</th><th>Functional group</th><th>Example (C₂)</th></tr></thead>
+          <tbody>
+            <tr><td>Alkanes</td><td>CₙH₂ₙ₊₂</td><td>C–C single bonds only</td><td>ethane, CH₃CH₃</td></tr>
+            <tr><td>Alkenes</td><td>CₙH₂ₙ</td><td>C=C double bond</td><td>ethene, CH₂=CH₂</td></tr>
+            <tr><td>Alcohols</td><td>CₙH₂ₙ₊₁OH</td><td>hydroxyl, –OH</td><td>ethanol, CH₃CH₂OH</td></tr>
+            <tr><td>Carboxylic acids</td><td>Cₙ₋₁H₂ₙ₋₁COOH</td><td>carboxyl, –COOH</td><td>ethanoic acid, CH₃COOH</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="prose" style="margin:10px 0 0">Members of a series differ by –CH₂–. Molecules attract each other through intermolecular forces: London (dispersion) forces between all molecules, and hydrogen bonds between molecules with an –OH group.</p>
+      </div>
+
+      <div class="source">
+        <h3>Source 2: Measuring a boiling point</h3>
+        <div class="prose">
+          <p>A liquid boils when bubbles of vapour form throughout it. While it boils steadily, its temperature stays constant: this is its boiling point.</p>
+          <p style="margin:0">Without anti-bumping granules, a liquid can heat a few degrees above its boiling point and then boil suddenly and violently. This is called <b>bumping</b>. A thermometer also takes time to catch up with the liquid's temperature.</p>
+        </div>
+      </div>
+
+      <div class="source">
+        <h3>Source 3: Data-book boiling points / °C at 101 kPa</h3>
+        <div class="dt-wrap"><table class="bands" id="dbTable"></table></div>
+        <p class="small" style="margin:8px 0 0">Compounds with a boiling point below 22 °C are gases at room temperature. There is no alkene with one carbon atom.</p>
+      </div>
+
+      <div class="source">
+        <h3>Source 4: Hazards</h3>
+        <div class="hazard"><b>Alkanes, alkenes and alcohols</b>: highly flammable liquids and vapours. Never heat with a naked flame.</div>
+        <div class="hazard" style="margin-top:8px"><b>Methanol</b>: toxic if swallowed, inhaled or absorbed through the skin.</div>
+        <div class="hazard" style="margin-top:8px"><b>Carboxylic acids</b>: corrosive or irritant to skin and eyes; strong, unpleasant smell.</div>
+        <div class="hazard" style="margin-top:8px"><b>Hot oil bath</b>: can reach 250 °C and cause severe burns.</div>
+      </div>
+
+      <div>
+        <h3 style="font-size:16px;margin-bottom:8px">Command terms used in this paper</h3>
+        <div class="terms">
+          <div><b>State</b>: give a specific name, value or other brief answer without explanation.</div>
+          <div><b>Formulate</b>: express precisely and systematically the relevant concept(s) or argument(s).</div>
+          <div><b>Explain</b>: give a detailed account including reasons or causes.</div>
+          <div><b>Justify</b>: give valid reasons or evidence to support an answer or conclusion.</div>
+          <div><b>Design</b>: produce a plan, simulation or model.</div>
+          <div><b>Present</b>: offer for display, observation, examination or consideration.</div>
+          <div><b>Interpret</b>: use knowledge and understanding to recognize trends and draw conclusions from given information.</div>
+          <div><b>Compare</b>: give an account of the similarities and differences between two (or more) items, referring to both (all) of them throughout.</div>
+          <div><b>Evaluate</b>: make an appraisal by weighing up the strengths and limitations.</div>
+          <div><b>Suggest</b>: propose a solution, hypothesis or other possible answer.</div>
+        </div>
+      </div>
+      <div class="btnrow"><button class="btn primary" type="button" data-go="b">Start Criterion B →</button></div>
+    </div>
+
+    <!-- CRITERION B -->
+    <div class="page" id="page-b" role="tabpanel" aria-labelledby="tab-b">
+      <div class="prose">
+        <span class="eyebrow">Criterion B · Inquiring and designing</span>
+        <h2 style="font-size:22px;margin:4px 0 8px">Plan your investigation</h2>
+        <p>Choose <b>one</b> homologous series. You will investigate how the <b>number of carbon atoms</b> affects the <b>boiling point</b>. You may try the virtual lab before you plan.</p>
+      </div>
+      <div id="qB"></div>
+      <div class="btnrow"><button class="btn primary" type="button" data-go="c">Continue to Criterion C →</button></div>
+    </div>
+
+    <!-- CRITERION C -->
+    <div class="page" id="page-c" role="tabpanel" aria-labelledby="tab-c">
+      <div class="prose">
+        <span class="eyebrow">Criterion C · Processing and evaluating</span>
+        <h2 style="font-size:22px;margin:4px 0 8px">Carry out the investigation, then process your results</h2>
+        <p>Use the virtual lab to follow your method from Criterion B. Record your readings in the table, then answer the questions. Use the data-book values in Source 3 where a question asks you to.</p>
+      </div>
+      <div id="qC"></div>
+      <div class="btnrow"><button class="btn primary" type="button" data-go="r">Go to Submit &amp; results →</button></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="page" id="page-r" role="tabpanel" aria-labelledby="tab-r">
+      <div class="prose">
+        <span class="eyebrow">Submit &amp; results</span>
+        <h2 style="font-size:22px;margin:4px 0 8px">Submit, send your PDF, then mark</h2>
+        <p>When you submit, your answers lock. Download them as a PDF and send it to your teacher. When your teacher shares the mark scheme code, enter it below: the mark scheme appears under every question and you can award marks. Totals convert to an MYP achievement level from 0 to 8.</p>
+      </div>
+      <div id="submitState" class="notice">Answers are not submitted yet.</div>
+      <div class="btnrow">
+        <button class="btn primary" id="submitBtn" type="button">Submit my answers</button>
+        <button class="btn primary" id="pdfBtn" type="button" hidden>Download my answers (PDF)</button>
+        <button class="btn" id="copyText" type="button">Copy answers as text</button>
+      </div>
+      <p class="small" id="pdfMsg" style="margin:0">After you submit, download your answers as a PDF and send it to your teacher.</p>
+
+      <div class="source">
+        <h3>Mark scheme code</h3>
+        <p class="small" style="margin:0 0 10px">Your teacher shares this code after receiving your PDF. It unlocks the mark scheme under every question so you can mark your work.</p>
+        <div class="pinrow">
+          <label for="msCode" class="small">Code</label>
+          <input id="msCode" autocomplete="off" placeholder="e.g. ABCDE-1234" style="width:200px;text-transform:uppercase">
+          <button class="btn" id="msBtn" type="button">Unlock mark scheme</button>
+        </div>
+        <p class="small" id="msMsg" style="margin:8px 0 0"></p>
+      </div>
+
+      <div class="summary">
+        <div class="score"><div class="k">Criterion B</div><div class="v"><span id="sumB">–</span><small> / 16</small></div><span class="level" id="lvlB">Level –</span></div>
+        <div class="score"><div class="k">Criterion C</div><div class="v"><span id="sumC">–</span><small> / 16</small></div><span class="level" id="lvlC">Level –</span></div>
+        <div class="score"><div class="k">Questions marked</div><div class="v"><span id="sumN">0</span><small> / 11</small></div></div>
+      </div>
+
+      <table class="bands">
+        <thead><tr><th>Raw marks</th><th>Level</th><th>Descriptor (summary)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>Does not reach a standard described below.</td></tr>
+          <tr><td>1–4</td><td>1–2</td><td>Limited: states some parts, with little scientific reasoning.</td></tr>
+          <tr><td>5–8</td><td>3–4</td><td>Adequate: outlines with some reasoning; method or processing partly complete.</td></tr>
+          <tr><td>9–12</td><td>5–6</td><td>Substantial: explains using correct scientific reasoning; mostly complete and accurate.</td></tr>
+          <tr><td>13–16</td><td>7–8</td><td>Excellent: explains and justifies fully; complete, accurate and well evaluated.</td></tr>
+        </tbody>
+      </table>
+
+      <div>
+        <label for="feedback" style="font-weight:600;display:block;margin-bottom:6px">Feedback and target</label>
+        <textarea id="feedback" rows="4" placeholder="Strengths, and one target for next time."></textarea>
+      </div>
+      <div class="btnrow"><button class="btn ghost" id="resetBtn" type="button">Start a new attempt…</button></div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+/* ===================== DATA ===================== */
+// Data-book boiling points / °C at 101 kPa (unbranched; alkenes are alk-1-enes; alcohols are alkan-1-ols).
+const SERIES = {
+  alkane:{label:"Alkanes", color:"#5a6580",
+    names:["methane","ethane","propane","butane","pentane","hexane","heptane","octane"],
+    bp:[-162,-89,-42,-1,36,69,98,126]},
+  alkene:{label:"Alkenes", color:"#7c5cc4",
+    names:[null,"ethene","propene","but-1-ene","pent-1-ene","hex-1-ene","hept-1-ene","oct-1-ene"],
+    bp:[null,-104,-48,-6,30,63,94,121]},
+  alcohol:{label:"Alcohols", color:"#0d8a6f",
+    names:["methanol","ethanol","propan-1-ol","butan-1-ol","pentan-1-ol","hexan-1-ol","heptan-1-ol","octan-1-ol"],
+    bp:[65,78,97,118,138,157,176,195]},
+  acid:{label:"Carboxylic acids", color:"#c2571a",
+    names:["methanoic acid","ethanoic acid","propanoic acid","butanoic acid","pentanoic acid","hexanoic acid","heptanoic acid","octanoic acid"],
+    bp:[101,118,141,164,186,205,223,239]}
+};
+const SUB="₀₁₂₃₄₅₆₇₈₉"; const sub=n=>String(n).split("").map(d=>SUB[+d]).join("");
+function formula(s,n){
+  const c=k=>k===1?"C":"C"+sub(k), h=k=>k===1?"H":"H"+sub(k);
+  if(s==="alkane") return c(n)+h(2*n+2);
+  if(s==="alkene") return c(n)+h(2*n);
+  if(s==="alcohol") return c(n)+h(2*n+1)+"OH";
+  if(s==="acid") return n===1?"HCOOH":(n===2?"CH₃COOH":c(n-1)+h(2*n-1)+"COOH");
+}
+// Does 1 cm3 mix completely with 5 cm3 water?
+function miscible(s,n){ if(s==="alcohol") return n<=3; if(s==="acid") return n<=4; return false; }
+const ROOM=22, SPEED=20, BATH_MAX=250;
+
+/* ===================== HELPERS ===================== */
+const $ = id => document.getElementById(id);
+function gauss(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+let tt=null; function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("on"),2600); }
+let pendingConfirm=null;
+function confirmInline(id,msg){ if(pendingConfirm===id){ pendingConfirm=null; return true; } pendingConfirm=id; toast(msg); setTimeout(()=>{ if(pendingConfirm===id) pendingConfirm=null; },3000); return false; }
+
+/* ===================== DATA-BOOK TABLE ===================== */
+(function(){
+  let h="<thead><tr><th>Carbon atoms</th>"+Object.values(SERIES).map(s=>`<th>${s.label}</th>`).join("")+"</tr></thead><tbody>";
+  for(let i=0;i<8;i++){ h+=`<tr><td>${i+1}</td>`+Object.values(SERIES).map(s=>s.bp[i]===null?"<td>—</td>":`<td title="${s.names[i]}">${s.bp[i]}</td>`).join("")+"</tr>"; }
+  $("dbTable").innerHTML=h+"</tbody>";
+  $("dbTable").style.fontVariantNumeric="tabular-nums";
+})();
+
+/* ===================== SIMULATION ===================== */
+const sim={ s:"alcohol", n:2, chips:true, rate:5, heat:false, ready:false, gas:false,
+  Tb:ROOM, TL:ROOM, Tth:ROOM, vol:0, sh:0, off:0, boiling:false, bumpT:0, t:0 };
+function bpNow(){ return SERIES[sim.s].bp[sim.n-1] + sim.off; }
+
+function fillN(){
+  const sel=$("nSel"), keep=+sel.value||sim.n; sel.innerHTML="";
+  for(let i=1;i<=8;i++){ const nm=SERIES[sim.s].names[i-1]; if(!nm) continue; const o=document.createElement("option"); o.value=i; o.textContent=`${i} (${nm})`; sel.appendChild(o); }
+  const opts=[...sel.options].map(o=>+o.value); sim.n = opts.includes(keep)?keep:opts[0]; sel.value=sim.n;
+}
+function showCompound(){ $("cmpdName").textContent=SERIES[sim.s].names[sim.n-1]; $("cmpdFormula").textContent=formula(sim.s,sim.n); }
+function setHeat(on){ sim.heat=on; $("heatBtn").textContent=on?"Switch heater off":"Switch heater on"; $("heatBtn").classList.toggle("primary",false); }
+function setup(){
+  sim.Tb=ROOM; sim.TL=ROOM; sim.Tth=ROOM+gauss()*0.2; sim.t=0; sim.boiling=false; sim.bumpT=0; setHeat(false);
+  sim.off=gauss()*0.4; sim.sh=4+Math.random()*5;
+  const bp=SERIES[sim.s].bp[sim.n-1];
+  if(bp<ROOM){ sim.gas=true; sim.ready=false; sim.vol=0; $("benchMsg").textContent=`${cap(SERIES[sim.s].names[sim.n-1])} boils at ${bp} °C, so it is a gas at room temperature. It cannot be tested with this apparatus.`; }
+  else { sim.gas=false; sim.ready=true; sim.vol=2.0; $("benchMsg").textContent="Fresh tube ready at room temperature. Switch the heater on when you are ready."; }
+  resetSol();
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+$("seriesSel").addEventListener("change",e=>{ sim.s=e.target.value; fillN(); showCompound(); setup(); });
+$("nSel").addEventListener("change",e=>{ sim.n=+e.target.value; showCompound(); setup(); });
+$("rateSel").addEventListener("change",e=>{ sim.rate=+e.target.value; });
+$("chips").addEventListener("change",e=>{ sim.chips=e.target.checked; setup(); toast(sim.chips?"Fresh tube with anti-bumping granules":"Fresh tube without anti-bumping granules"); });
+$("setupBtn").addEventListener("click",()=>{ setup(); });
+$("heatBtn").addEventListener("click",()=>{
+  if(sim.gas){ toast("This compound is a gas at room temperature."); return; }
+  if(!sim.ready){ toast("Set up a fresh tube first."); return; }
+  setHeat(!sim.heat); if(sim.heat) $("benchMsg").textContent="Heater on. Watch the liquid and the thermometer.";
+});
+
+function physics(ds){
+  if(sim.heat){ sim.Tb=Math.min(BATH_MAX, sim.Tb+sim.rate/60*ds); sim.t+=ds; }
+  else sim.Tb+= (ROOM-sim.Tb)*(1-Math.exp(-ds/400));
+  const bp=bpNow();
+  sim.bumpT=Math.max(0,sim.bumpT-ds);
+  if(sim.ready && sim.vol>0){
+    sim.TL += (sim.Tb-sim.TL)*(1-Math.exp(-ds/25));
+    if(sim.chips){
+      if(sim.TL>=bp && sim.Tb>bp){ sim.TL=bp; sim.boiling=true; sim.vol-=0.0006*(sim.Tb-bp+2)*ds; }
+      else sim.boiling=false;
+    } else {
+      sim.boiling=false;
+      if(sim.TL>=bp+sim.sh && sim.Tb>bp){ sim.TL=bp+0.3; sim.bumpT=2.5; sim.vol-=0.12; sim.sh=4+Math.random()*5; }
+    }
+    if(sim.vol<=0){ sim.vol=0; sim.boiling=false; $("benchMsg").textContent="The liquid has all boiled away. Set up a fresh tube to repeat."; }
+  } else {
+    sim.TL += (sim.Tb-sim.TL)*(1-Math.exp(-ds/25));
+  }
+  sim.Tth += (sim.TL-sim.Tth)*(1-Math.exp(-ds/12));
+}
+
+/* ---------- Scene ---------- */
+const bubbles=[];
+function drawScene(){
+  const cv=$("scene"); const dpr=window.devicePixelRatio||1; const W=cv.clientWidth||400, H=300;
+  if(cv.width!==Math.round(W*dpr)){ cv.width=W*dpr; cv.height=H*dpr; }
+  const g=cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  const ink=cssVar("--ink"), muted=cssVar("--muted"), rule=cssVar("--rule");
+  const magW=Math.min(130,W*0.32), sceneW=W-magW-16;
+  const bx=14, bw=Math.min(210,sceneW-24), by=104, bh=150;
+  // hotplate
+  g.fillStyle="#3b4152"; g.fillRect(bx-6,by+bh+4,bw+12,18);
+  const glow=Math.max(0,Math.min(1,(sim.Tb-ROOM)/200));
+  g.fillStyle=sim.heat?`rgb(${150+100*glow|0},${70+40*glow|0},40)`:"#555c6e"; g.fillRect(bx+bw/2-24,by+bh+10,48,5);
+  g.fillStyle="#9aa3b8"; g.font=`10px ${cssVar("--font-body")}`; g.textAlign="left"; g.fillText(sim.heat?"heater ON":"heater off",bx+2,by+bh+16);
+  // oil
+  g.fillStyle=`rgba(${215+30*glow|0},${180-30*glow|0},${90-40*glow|0},0.35)`; g.fillRect(bx,by+28,bw,bh-28);
+  g.strokeStyle=muted; g.lineWidth=2; g.beginPath(); g.moveTo(bx-4,by); g.lineTo(bx,by); g.lineTo(bx,by+bh); g.lineTo(bx+bw,by+bh); g.lineTo(bx+bw,by); g.stroke();
+  g.fillStyle=muted; g.fillText("oil bath",bx+bw-46,by+bh-6);
+  // boiling tube
+  const tx=bx+bw*0.22, tw=40, ty=by-62, th=bh+32;
+  const lh = sim.ready ? th*0.42*(sim.vol/2) : 0;
+  const ly = ty+th-lh;
+  g.save(); g.beginPath(); g.moveTo(tx,ty); g.lineTo(tx,ty+th-tw/2); g.arc(tx+tw/2,ty+th-tw/2,tw/2,Math.PI,0,true); g.lineTo(tx+tw,ty); g.closePath(); g.clip();
+  if(lh>0){
+    g.fillStyle = sim.s==="acid" ? "rgba(235,230,205,.95)" : "rgba(225,240,250,.95)"; g.fillRect(tx,ly,tw,lh);
+    g.strokeStyle="rgba(90,110,140,.6)"; g.lineWidth=1; g.beginPath(); g.moveTo(tx,ly); g.quadraticCurveTo(tx+tw/2,ly+3,tx+tw,ly); g.stroke();
+    if(sim.chips){ g.fillStyle="#8a8f9c"; [[8,6],[18,9],[28,5],[14,13],[24,14]].forEach(([x,y])=>{ g.beginPath(); g.arc(tx+x,ty+th-y-4,2.2,0,7); g.fill(); }); }
+    // bubbles
+    const intensity = sim.boiling ? Math.min(1,(sim.Tb-bpNow())/12+0.35) : (sim.bumpT>0 ? 1.4 : 0);
+    if(Math.random()<intensity*0.9) bubbles.push({x:tx+6+Math.random()*(tw-12), y:ty+th-8, r:1.5+Math.random()*(sim.bumpT>0?5:2.5), v:1+Math.random()*2});
+    g.strokeStyle="rgba(60,80,110,.7)"; g.lineWidth=1;
+    for(let i=bubbles.length-1;i>=0;i--){ const b=bubbles[i]; b.y-=b.v*(sim.bumpT>0?2.2:1); if(b.y<ly+2){ bubbles.splice(i,1); continue; } g.beginPath(); g.arc(b.x,b.y,b.r,0,7); g.stroke(); }
+    if(sim.bumpT>0){ g.fillStyle="rgba(225,240,250,.9)"; for(let i=0;i<6;i++){ g.beginPath(); g.arc(tx+5+Math.random()*(tw-10), ly-4-Math.random()*22, 1.5+Math.random()*2.5,0,7); g.fill(); } }
+    // condensation ring
+    if(sim.boiling||sim.bumpT>0){ g.fillStyle="rgba(150,170,200,.35)"; g.fillRect(tx,ly-34,tw,10); }
+  } else bubbles.length=0;
+  g.restore();
+  g.strokeStyle=ink; g.lineWidth=1.6; g.beginPath(); g.moveTo(tx,ty); g.lineTo(tx,ty+th-tw/2); g.arc(tx+tw/2,ty+th-tw/2,tw/2,Math.PI,0,true); g.lineTo(tx+tw,ty); g.stroke();
+  g.fillStyle=muted; g.fillRect(tx-10,ty+10,tw+20,6);
+  if(sim.gas){ g.fillStyle=muted; g.font=`11px ${cssVar("--font-body")}`; g.textAlign="center"; g.fillText("gas at room",tx+tw/2,ty+th-50); g.fillText("temperature",tx+tw/2,ty+th-36); }
+  // thermometer in the tube (bulb in liquid)
+  const mx=tx+tw/2+4, mTop=8, mBot=ty+th-10, mw=8, lx=tx+tw+6;
+  const tmin=0,tmax=250; const yOf=t=>mBot-10-(Math.max(tmin,Math.min(tmax,t))-tmin)/(tmax-tmin)*(mBot-10-mTop-6);
+  g.fillStyle="rgba(255,255,255,.9)"; g.strokeStyle=ink; g.lineWidth=1;
+  g.beginPath(); g.roundRect?g.roundRect(mx-mw/2,mTop,mw,mBot-mTop,4):g.rect(mx-mw/2,mTop,mw,mBot-mTop); g.fill(); g.stroke();
+  g.fillStyle="#d2302f"; g.beginPath(); g.arc(mx,mBot-4,6,0,7); g.fill(); g.fillRect(mx-1.5,yOf(sim.Tth),3,mBot-4-yOf(sim.Tth));
+  g.strokeStyle=ink; g.fillStyle=ink; g.font=`9px ${cssVar("--font-mono")}`; g.textAlign="left"; g.textBaseline="middle";
+  for(let t=0;t<=250;t+=10){ const y=yOf(t); const L=t%50===0?6:3; g.beginPath(); g.moveTo(mx+mw/2,y); g.lineTo(mx+mw/2+L,y); g.stroke(); if(t%50===0){ g.fillStyle=cssVar('--sheet'); const tw2=g.measureText(t).width; g.fillRect(lx-1,y-6,tw2+3,12); g.fillStyle=ink; g.fillText(t,lx,y); } }
+  // magnifier
+  const px=W-magW-6, py=14, ph=H-28;
+  g.fillStyle=cssVar("--sheet"); g.strokeStyle=rule; g.beginPath(); g.roundRect?g.roundRect(px,py,magW,ph,10):g.rect(px,py,magW,ph); g.fill(); g.stroke();
+  g.fillStyle=muted; g.font=`600 10.5px ${cssVar("--font-body")}`; g.textAlign="center"; g.textBaseline="top"; g.fillText("THERMOMETER (×10)",px+magW/2,py+8);
+  const c0=Math.round(sim.Tth), span=8, zx=px+magW*0.38, zTop=py+30, zBot=py+ph-14;
+  const zy=t=>zBot-(t-(c0-span))/(2*span)*(zBot-zTop);
+  g.fillStyle="rgba(255,255,255,.95)"; g.fillRect(zx-9,zTop,18,zBot-zTop); g.strokeStyle=ink; g.strokeRect(zx-9,zTop,18,zBot-zTop);
+  g.fillStyle="#d2302f"; const yl=Math.max(zTop,Math.min(zBot,zy(sim.Tth))); g.fillRect(zx-4,yl,8,zBot-yl);
+  g.strokeStyle=ink; g.fillStyle=ink; g.textAlign="left"; g.textBaseline="middle"; g.font=`11px ${cssVar("--font-mono")}`;
+  for(let t=c0-span;t<=c0+span;t++){ const y=zy(t); const L=t%5===0?12:6; g.beginPath(); g.moveTo(zx+9,y); g.lineTo(zx+9+L,y); g.stroke(); if(t%2===0) g.fillText(t,zx+24,y); }
+  g.fillStyle=muted; g.textAlign="center"; g.font=`10px ${cssVar("--font-body")}`; g.fillText("°C",px+magW/2,zBot+7);
+}
+let last=performance.now(), acc=0;
+function step(now){
+  const dt=Math.min(0.1,(now-last)/1000); last=now;
+  const n=4; for(let i=0;i<n;i++) physics(dt*SPEED/n);
+  acc+=dt;
+  if(acc>0.05){
+    acc=0; drawScene();
+    const s=Math.floor(sim.t); $("clock").textContent=`Heating time: ${Math.floor(s/60)} min ${String(s%60).padStart(2,"0")} s`;
+    const o=$("obs");
+    if(sim.gas){ o.className="obs"; o.textContent="Gas: cannot be tested"; }
+    else if(!sim.ready||sim.vol<=0){ o.className="obs"; o.textContent=sim.ready?"Boiled dry":"No tube"; }
+    else if(sim.bumpT>0){ o.className="obs bump"; o.textContent="Bumping: sudden violent boiling"; }
+    else if(sim.boiling){ o.className="obs boil"; o.textContent="Boiling steadily"; }
+    else { o.className="obs"; o.textContent= sim.TL>bpNow()-2 && !sim.chips ? "Liquid is still (very hot)" : "Liquid is still"; }
+  }
+  requestAnimationFrame(step);
+}
+
+/* ---------- Solubility ---------- */
+function resetSol(){ $("solWater").style.height="62%"; $("solOrg").style.height="0"; $("solOrg").style.bottom="62%"; $("solWater").style.background="rgba(170,210,235,.55)"; $("solBtn").disabled=sim.gas; $("solMsg").textContent= sim.gas ? "A gas cannot be tested this way." : "Look closely: one clear layer, or two layers with a boundary?"; }
+$("solBtn").addEventListener("click",()=>{
+  if(sim.gas) return;
+  const w=$("solWater"), o=$("solOrg");
+  if(miscible(sim.s,sim.n)){ w.style.height="74%"; w.style.background="rgba(185,215,235,.6)"; o.style.height="0"; o.style.bottom="74%"; }
+  else { w.style.height="62%"; o.style.bottom="62%"; o.style.height="12%"; }
+  $("solMsg").textContent="Tube shaken and left to settle. Record what you see.";
+});
+
+/* ===================== QUESTIONS ===================== */
+const Q = [
+ {"id":"B1","crit":"B","max":2,"rows":3,"text":"<p><span class=\"cmd\">State</span> a focused research question for your investigation.</p>"},
+ {"id":"B2","crit":"B","max":4,"rows":6,"text":"<p><span class=\"cmd\">Formulate</span> a testable hypothesis and <span class=\"cmd\">explain</span> it using scientific reasoning.</p>"},
+ {"id":"B3","crit":"B","max":4,"rows":6,"text":"<p><span class=\"cmd\">State</span> the independent and dependent variables, and <span class=\"cmd\">explain</span> how you will control <b>two</b> other variables.</p>"},
+ {"id":"B4","crit":"B","max":2,"rows":4,"text":"<p><span class=\"cmd\">Justify</span> <b>two</b> choices in your method that make your boiling point readings accurate.</p>"},
+ {"id":"B5","crit":"B","max":4,"rows":9,"text":"<p><span class=\"cmd\">Design</span> a safe method that will collect sufficient, relevant data. Write numbered steps.</p>"},
+ {"id":"C1","crit":"C","max":3,"widget":"table","text":"<p><span class=\"cmd\">Present</span> your raw data in a suitable table. Type your own column headings with units. Include three trials and a mean for each compound.</p>"},
+ {"id":"C2","crit":"C","max":3,"widget":"graph","text":"<p><span class=\"cmd\">Present</span> your processed data as a graph with a descriptive title. Add the data-book values of <b>at least one other</b> homologous series so that you can compare the trends.</p>"},
+ {"id":"C3","crit":"C","max":3,"rows":6,"text":"<p><span class=\"cmd\">Interpret</span> your data. Describe the trend in boiling point in your series and explain it.</p>"},
+ {"id":"C4","crit":"C","max":3,"rows":7,"text":"<p><span class=\"cmd\">Compare</span> the boiling points of the four homologous series for molecules with the same number of carbon atoms. <span class=\"cmd\">Explain</span> the differences using intermolecular forces. You may use your solubility observations.</p>"},
+ {"id":"C5","crit":"C","max":2,"rows":5,"text":"<p><span class=\"cmd\">Evaluate</span> the validity of your method. Calculate the percentage difference between one of your mean values and the data-book value, and explain <b>one</b> weakness that could cause it.</p>"},
+ {"id":"C6","crit":"C","max":2,"rows":5,"text":"<p><span class=\"cmd\">Suggest</span> one improvement to your method and one extension to the investigation.</p>"}
+];
+// Mark scheme: AES-GCM encrypted; the key comes from the teacher's code (PBKDF2-SHA256).
+const MS_ENC = {"salt":"ulae4PfD4Pr2W7R+5jQOBQ==","iv":"rXzn6+VBpxgYGErT","iter":150000,"ct":"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"};
+
+/* ===================== STATE & STORAGE ===================== */
+const KEY="myp-organic-bp-v1";
+let state={ name:"", cls:"", answers:{}, table:{head:["","","","",""], rows:Array.from({length:6},()=>["","","","",""])},
+  graph:{title:"",x:"",y:"",fit:"curve",bars:true,own:"",db:{alkane:false,alkene:false,alcohol:false,acid:false}},
+  submitted:false, marks:{}, feedback:"", timer:3600 };
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+(function load(){ try{ const s=localStorage.getItem(KEY); if(s){ const d=JSON.parse(s); state=Object.assign(state,d); state.graph=Object.assign({title:"",x:"",y:"",fit:"curve",bars:true,own:"",db:{}},d.graph||{}); } }catch(e){} })();
+
+/* ===================== RENDER QUESTIONS ===================== */
+function wordCount(s){ return (s.trim().match(/\S+/g)||[]).length; }
+function msBlock(q){
+  return `<div class="ms" id="ms-${q.id}">
+    <h4><span>Mark scheme ${q.id}</span>
+      <span class="award"><label for="mk-${q.id}">Marks awarded</label><input id="mk-${q.id}" type="number" min="0" max="${q.max}" step="1" inputmode="numeric"> / ${q.max}</span></h4>
+    <div class="ms-body" id="msb-${q.id}"></div>
+  </div>`;
+}
+function renderQuestions(){
+  ["B","C"].forEach(c=>{
+    const host=$("q"+c); host.innerHTML="";
+    Q.filter(q=>q.crit===c).forEach(q=>{
+      const d=document.createElement("div"); d.className="q";
+      let body;
+      if(q.widget==="table") body=tableHTML();
+      else if(q.widget==="graph") body=graphHTML();
+      else body=`<textarea id="ans-${q.id}" rows="${q.rows}" aria-label="Answer to ${q.id}"></textarea><div class="wc" id="wc-${q.id}">0 words</div>`;
+      d.innerHTML=`<div class="qhead"><span class="qnum">${q.id}</span><div class="qtext">${q.text}</div><span class="marks">[${q.max}]</span></div>${body}${msBlock(q)}`;
+      host.appendChild(d);
+    });
+  });
+  Q.forEach(q=>{
+    const ta=$("ans-"+q.id);
+    if(ta){ ta.value=state.answers[q.id]||""; $("wc-"+q.id).textContent=wordCount(ta.value)+" words";
+      ta.addEventListener("input",()=>{ state.answers[q.id]=ta.value; $("wc-"+q.id).textContent=wordCount(ta.value)+" words"; save(); }); }
+    const mk=$("mk-"+q.id);
+    if(state.marks[q.id]!==undefined && state.marks[q.id]!=="") mk.value=state.marks[q.id];
+    mk.addEventListener("input",()=>{ let v=mk.value===""?"":Math.max(0,Math.min(q.max,Math.round(+mk.value))); if(mk.value!==""&&+mk.value!==v) mk.value=v; state.marks[q.id]=v; save(); updateTotals(); });
+  });
+  bindTable(); bindGraph();
+}
+
+/* ===================== DATA TABLE ===================== */
+function tableHTML(){
+  return `<div class="dt-wrap"><table class="dt" id="dt">
+    <thead>
+      <tr class="group"><th>Independent variable</th><th colspan="3">Dependent variable: trials</th><th>Processed</th></tr>
+      <tr>${[0,1,2,3,4].map(i=>`<th><input id="h${i}" placeholder="${["Independent variable / unit","Trial 1","Trial 2","Trial 3","Mean"][i]}" aria-label="Column ${i+1} heading"></th>`).join("")}</tr>
+    </thead><tbody id="dtBody"></tbody></table></div>
+    <div class="btnrow" style="margin-top:8px"><button class="btn" type="button" id="addRow">Add row</button><button class="btn" type="button" id="delRow">Remove last row</button></div>`;
+}
+function renderRows(){
+  const tb=$("dtBody"); tb.innerHTML="";
+  state.table.rows.forEach((r,ri)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=r.map((v,ci)=>`<td class="${ci===4?"mean":""}"><input id="c${ri}_${ci}" inputmode="decimal" aria-label="Row ${ri+1} column ${ci+1}"></td>`).join("");
+    tb.appendChild(tr);
+    r.forEach((v,ci)=>{ const inp=$(`c${ri}_${ci}`); inp.value=v; inp.addEventListener("input",()=>{ state.table.rows[ri][ci]=inp.value; save(); drawGraph(); }); });
+  });
+  applyLock();
+}
+function bindTable(){
+  state.table.head.forEach((v,i)=>{ const h=$("h"+i); h.value=v; h.addEventListener("input",()=>{ state.table.head[i]=h.value; save(); }); });
+  renderRows();
+  $("addRow").addEventListener("click",()=>{ if(state.submitted) return; state.table.rows.push(["","","","",""]); renderRows(); save(); });
+  $("delRow").addEventListener("click",()=>{ if(state.submitted) return; if(state.table.rows.length>1){ state.table.rows.pop(); renderRows(); save(); drawGraph(); } });
+}
+
+/* ===================== GRAPH ===================== */
+const OWN_COLOR="#d2302f";
+function graphHTML(){
+  return `<div class="graphbox">
+    <div class="graph-ctrls">
+      <label class="wide">Graph title<input id="gt" placeholder="A descriptive title"></label>
+      <label>x-axis title<input id="gx" placeholder="Quantity / unit"></label>
+      <label>y-axis title<input id="gy" placeholder="Quantity / unit"></label>
+      <label>Your series (legend name)<input id="gown" placeholder="e.g. Alcohols (my data)"></label>
+      <label>Line of best fit
+        <select id="gfit"><option value="none">None</option><option value="line">Straight line</option><option value="curve">Smooth curve</option></select></label>
+      <label class="checkline wide"><input type="checkbox" id="gbars"> Show range bars on my data (lowest to highest trial)</label>
+    </div>
+    <div class="legend-row" aria-label="Add data-book series">
+      <span class="small" style="font-weight:600">Add data-book values:</span>
+      ${Object.entries(SERIES).map(([k,s])=>`<label><input type="checkbox" id="gdb-${k}"><i style="background:${s.color}"></i>${s.label}</label>`).join("")}
+    </div>
+    <canvas id="graph" height="380" aria-label="Graph of your data"></canvas>
+    <p class="small" style="margin:6px 0 0">Your data: column 1 (x) against your <b>Mean</b> column (y), drawn in red. Data-book series use the Source 3 values.</p>
+  </div>`;
+}
+function bindGraph(){
+  const g=state.graph;
+  [["gt","title"],["gx","x"],["gy","y"],["gown","own"]].forEach(([id,k])=>{ $(id).value=g[k]||""; $(id).addEventListener("input",e=>{ g[k]=e.target.value; save(); drawGraph(); }); });
+  $("gfit").value=g.fit; $("gfit").addEventListener("change",e=>{ g.fit=e.target.value; save(); drawGraph(); });
+  $("gbars").checked=g.bars; $("gbars").addEventListener("change",e=>{ g.bars=e.target.checked; save(); drawGraph(); });
+  Object.keys(SERIES).forEach(k=>{ const c=$("gdb-"+k); c.checked=!!g.db[k]; c.addEventListener("change",e=>{ g.db[k]=e.target.checked; save(); drawGraph(); }); });
+  drawGraph();
+}
+function num(v){ if(v===undefined||v===null) return NaN; const s=String(v).trim().replace(",","."); return s===""?NaN:+s; }
+function niceStep(range,target){ const raw=range/target; const p=Math.pow(10,Math.floor(Math.log10(raw))); const n=raw/p; return (n<1.5?1:n<3?2:n<7?5:10)*p; }
+function polyfit(xs,ys,deg){
+  const mx=xs.reduce((a,b)=>a+b,0)/xs.length; const sx=Math.sqrt(xs.reduce((a,b)=>a+(b-mx)**2,0)/xs.length)||1;
+  const X=xs.map(x=>(x-mx)/sx); const n=deg+1; const A=Array.from({length:n},()=>Array(n+1).fill(0));
+  for(let i=0;i<X.length;i++){ for(let r=0;r<n;r++){ for(let c=0;c<n;c++) A[r][c]+=Math.pow(X[i],r+c); A[r][n]+=ys[i]*Math.pow(X[i],r); } }
+  for(let i=0;i<n;i++){ let m=i; for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[m][i])) m=r; [A[i],A[m]]=[A[m],A[i]]; if(Math.abs(A[i][i])<1e-12) return null;
+    for(let r=0;r<n;r++){ if(r===i) continue; const f=A[r][i]/A[i][i]; for(let c=i;c<=n;c++) A[r][c]-=f*A[i][c]; } }
+  const co=A.map((row,i)=>row[n]/row[i]); return x=>{ const t=(x-mx)/sx; return co.reduce((s,c,i)=>s+c*Math.pow(t,i),0); };
+}
+function drawGraph(){
+  const cv=$("graph"); if(!cv) return;
+  const dpr=window.devicePixelRatio||1; const W=cv.clientWidth||600, H=380;
+  cv.width=W*dpr; cv.height=H*dpr; const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const ink=cssVar("--ink"), muted=cssVar("--muted"), rule=cssVar("--rule"), font=cssVar("--font-body");
+  ctx.clearRect(0,0,W,H);
+  const sets=[];
+  const own=[]; state.table.rows.forEach(r=>{ const x=num(r[0]), y=num(r[4]); if(isFinite(x)&&isFinite(y)){ const tr=[1,2,3].map(i=>num(r[i])).filter(isFinite); own.push({x,y,lo:tr.length?Math.min(...tr):y,hi:tr.length?Math.max(...tr):y}); } });
+  if(own.length) sets.push({label:state.graph.own||"My data",color:OWN_COLOR,pts:own,own:true});
+  Object.entries(SERIES).forEach(([k,s])=>{ if(state.graph.db[k]){ const p=[]; s.bp.forEach((b,i)=>{ if(b!==null) p.push({x:i+1,y:b,lo:b,hi:b}); }); sets.push({label:s.label+" (data book)",color:s.color,pts:p}); } });
+  const T=state.graph.title?40:16, L=62, R=18, B=52+ (sets.length?22:0);
+  const pw=W-L-R, ph=H-T-B;
+  if(state.graph.title){ ctx.fillStyle=ink; ctx.font=`700 14px ${font}`; ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(state.graph.title,W/2,10); }
+  const all=sets.flatMap(s=>s.pts);
+  if(all.length<2){ ctx.strokeStyle=rule; ctx.strokeRect(L,T,pw,ph); ctx.fillStyle=muted; ctx.font=`12px ${font}`; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("Enter at least two rows with an x value and a mean, or add a data-book series.",L+pw/2,T+ph/2); return; }
+  let x0=Math.min(...all.map(p=>p.x)), x1=Math.max(...all.map(p=>p.x));
+  let y0=Math.min(0,...all.map(p=>p.lo)), y1=Math.max(...all.map(p=>p.hi));
+  if(x1===x0){x0-=1;x1+=1;} if(y1===y0){y1=y0+1;}
+  const xs=niceStep(x1-x0,8), ys=niceStep(y1-y0,7);
+  x0=Math.floor(x0/xs)*xs; x1=Math.ceil(x1/xs)*xs; y0=Math.floor(y0/ys)*ys; y1=Math.ceil(y1/ys)*ys;
+  const X=v=>L+(v-x0)/(x1-x0)*pw, Y=v=>T+ph-(v-y0)/(y1-y0)*ph;
+  const dec=s=>Math.max(0,-Math.floor(Math.log10(s)+1e-9));
+  ctx.lineWidth=1; ctx.strokeStyle=rule; ctx.fillStyle=muted; ctx.font=`12px ${font}`;
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  for(let v=x0; v<=x1+xs/2; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,T); ctx.lineTo(px,T+ph); ctx.stroke(); ctx.fillText(v.toFixed(dec(xs)),px,T+ph+6); }
+  ctx.textAlign="right"; ctx.textBaseline="middle";
+  for(let v=y0; v<=y1+ys/2; v+=ys){ const py=Y(v); ctx.beginPath(); ctx.moveTo(L,py); ctx.lineTo(L+pw,py); ctx.stroke(); ctx.fillText(v.toFixed(dec(ys)),L-8,py); }
+  if(y0<0){ ctx.strokeStyle=muted; ctx.beginPath(); ctx.moveTo(L,Y(0)); ctx.lineTo(L+pw,Y(0)); ctx.stroke(); }
+  ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(L,T); ctx.lineTo(L,T+ph); ctx.lineTo(L+pw,T+ph); ctx.stroke();
+  ctx.fillStyle=ink; ctx.font=`600 13px ${font}`; ctx.textAlign="center"; ctx.textBaseline="alphabetic";
+  ctx.fillText(state.graph.x||"x-axis title missing",L+pw/2,T+ph+38);
+  ctx.save(); ctx.translate(16,T+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText(state.graph.y||"y-axis title missing",0,0); ctx.restore();
+  sets.forEach(s=>{
+    const pts=[...s.pts].sort((a,b)=>a.x-b.x);
+    if(state.graph.fit!=="none" && pts.length>=2){
+      const deg=state.graph.fit==="line"?1:Math.min(3,pts.length-1);
+      const fn=polyfit(pts.map(p=>p.x),pts.map(p=>p.y),deg);
+      if(fn){ ctx.strokeStyle=s.color; ctx.lineWidth=2; ctx.beginPath(); const a=pts[0].x,b=pts[pts.length-1].x;
+        for(let i=0;i<=120;i++){ const xv=a+(b-a)*i/120; const px=X(xv), py=Math.max(T,Math.min(T+ph,Y(fn(xv)))); i?ctx.lineTo(px,py):ctx.moveTo(px,py); } ctx.stroke(); }
+    }
+    pts.forEach(p=>{
+      if(s.own && state.graph.bars && p.hi>p.lo){ ctx.strokeStyle=s.color; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(X(p.x),Y(p.lo)); ctx.lineTo(X(p.x),Y(p.hi)); ctx.moveTo(X(p.x)-4,Y(p.lo)); ctx.lineTo(X(p.x)+4,Y(p.lo)); ctx.moveTo(X(p.x)-4,Y(p.hi)); ctx.lineTo(X(p.x)+4,Y(p.hi)); ctx.stroke(); }
+      ctx.fillStyle=s.color; ctx.beginPath();
+      if(s.own) ctx.arc(X(p.x),Y(p.y),4.5,0,7); else ctx.rect(X(p.x)-3.5,Y(p.y)-3.5,7,7);
+      ctx.fill();
+    });
+  });
+  // legend
+  let lx=L, ly=H-12; ctx.font=`12px ${font}`; ctx.textAlign="left"; ctx.textBaseline="middle";
+  sets.forEach(s=>{ const w=ctx.measureText(s.label).width+34; if(lx+w>W-R){ lx=L; ly-=18; } ctx.strokeStyle=s.color; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(lx+18,ly); ctx.stroke(); ctx.fillStyle=ink; ctx.fillText(s.label,lx+24,ly); lx+=w+6; });
+}
+window.addEventListener("resize",()=>drawGraph());
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>drawGraph()); }catch(e){}
+new MutationObserver(()=>drawGraph()).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ===================== TABS ===================== */
+const tabs=["info","b","c","r"];
+function show(k){
+  tabs.forEach(t=>{ $("tab-"+t).setAttribute("aria-selected",t===k); $("page-"+t).classList.toggle("on",t===k); });
+  if(k==="c") requestAnimationFrame(drawGraph);
+  const bk=document.querySelector(".booklet"); if(bk.getBoundingClientRect().top<0) bk.scrollIntoView({behavior:"smooth"});
+}
+tabs.forEach(t=>$("tab-"+t).addEventListener("click",()=>show(t)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
+
+/* ===================== MARKING ===================== */
+let MS=null;
+function levelOf(raw){ return Math.min(8,Math.round(raw/2)); }
+function hasMark(id){ return state.marks[id]!==undefined && state.marks[id]!==""; }
+function updateTotals(){
+  let b=0,c=0,n=0;
+  Q.forEach(q=>{ if(hasMark(q.id)){ n++; if(q.crit==="B") b+=+state.marks[q.id]; else c+=+state.marks[q.id]; } });
+  const anyB=Q.some(q=>q.crit==="B"&&hasMark(q.id)), anyC=Q.some(q=>q.crit==="C"&&hasMark(q.id));
+  $("sumB").textContent=anyB?b:"–"; $("sumC").textContent=anyC?c:"–"; $("sumN").textContent=n;
+  $("lvlB").textContent="Level "+(anyB?levelOf(b):"–"); $("lvlC").textContent="Level "+(anyC?levelOf(c):"–");
+}
+function applyLock(){
+  const lock=state.submitted;
+  document.querySelectorAll("textarea[id^=ans-], .dt input, #gt, #gx, #gy, #gown").forEach(el=>{ el.readOnly=lock; });
+  ["gfit","gbars",...Object.keys(SERIES).map(k=>"gdb-"+k)].forEach(id=>{ if($(id)) $(id).disabled=lock; });
+  if($("addRow")){ $("addRow").disabled=lock; $("delRow").disabled=lock; }
+  document.body.classList.toggle("marking",!!MS);
+  $("submitBtn").hidden=state.submitted; $("pdfBtn").hidden=!state.submitted;
+  $("submitState").className="notice"+(state.submitted?" ok":"");
+  $("submitState").textContent=state.submitted
+    ? (MS?"Submitted and mark scheme unlocked. Award marks under each question, then download your marked PDF.":"Submitted. Your answers are locked. Download your PDF and send it to your teacher.")
+    : "Answers are not submitted yet.";
+}
+$("submitBtn").addEventListener("click",()=>{
+  if(!confirmInline("submit","Click Submit again to confirm. Your answers will lock.")) return;
+  state.submitted=true; state.submittedAt=new Date().toISOString(); save(); applyLock(); toast("Submitted. Now download your answers as a PDF.");
+});
+function b64(s){ return Uint8Array.from(atob(s),c=>c.charCodeAt(0)); }
+function normCode(c){ return String(c||"").toUpperCase().replace(/\s+/g,""); }
+async function decryptMS(code){
+  const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey("raw",enc.encode(normCode(code)),"PBKDF2",false,["deriveKey"]);
+  const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(MS_ENC.salt),iterations:MS_ENC.iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(MS_ENC.iv)},key,b64(MS_ENC.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function showMS(){ Q.forEach(q=>{ const m=MS[q.id]; if(!m) return; $("msb-"+q.id).innerHTML=`<ul>${m.ms.map(x=>`<li>${x}</li>`).join("")}</ul><div class="model"><b>Example answer:</b> ${m.model}</div>`; }); applyLock(); }
+async function tryUnlock(code,quiet){
+  try{ MS=await decryptMS(code); state.msCode=normCode(code); save(); showMS(); $("pdfBtn").textContent="Download my marked PDF"; if(!quiet){ $("msMsg").textContent="Mark scheme unlocked. It now appears under every question."; toast("Mark scheme unlocked"); } return true; }
+  catch(e){ if(!quiet) $("msMsg").textContent="That code is not correct. Check it with your teacher."; return false; }
+}
+$("msBtn").addEventListener("click",()=>{ if(!state.submitted){ $("msMsg").textContent="Submit your answers first, then enter the code."; return; } tryUnlock($("msCode").value,false); });
+$("msCode").addEventListener("keydown",e=>{ if(e.key==="Enter") $("msBtn").click(); });
+$("resetBtn").addEventListener("click",()=>{ if(!confirmInline("reset","Click again to clear every answer and mark and start a new attempt.")) return; try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); });
+$("feedback").value=state.feedback||""; $("feedback").addEventListener("input",e=>{ state.feedback=e.target.value; save(); });
+
+/* ===================== HEADER & TIMER ===================== */
+$("studentName").value=state.name; $("studentClass").value=state.cls;
+$("studentName").addEventListener("input",e=>{state.name=e.target.value;save();});
+$("studentClass").addEventListener("input",e=>{state.cls=e.target.value;save();});
+let timerOn=false, tick=null;
+function fmt(s){ return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
+function paintTimer(){ $("timerTxt").textContent=fmt(state.timer); $("timerBtn").classList.toggle("low",state.timer<=600); }
+paintTimer();
+$("timerBtn").addEventListener("click",()=>{ timerOn=!timerOn;
+  if(timerOn){ tick=setInterval(()=>{ if(state.timer>0){ state.timer--; paintTimer(); if(state.timer%15===0) save(); } else { clearInterval(tick); timerOn=false; toast("Time is up."); } },1000); toast("Timer started"); }
+  else { clearInterval(tick); save(); toast("Timer paused"); } });
+
+/* ===================== EXPORT ===================== */
+function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function plainText(){
+  let o=`Boiling Points of Homologous Series: MYP Criteria B & C\nName: ${state.name}\nClass: ${state.cls}\n\n`;
+  Q.forEach(q=>{
+    o+=`${q.id} [${q.max}]`+(hasMark(q.id)?`  Marks: ${state.marks[q.id]}/${q.max}`:"")+"\n";
+    if(q.widget==="table"){ o+=state.table.head.map(h=>h||"-").join(" | ")+"\n"; state.table.rows.filter(r=>r.some(v=>String(v).trim())).forEach(r=>o+=r.join(" | ")+"\n"); }
+    else if(q.widget==="graph"){ o+=`Title: ${state.graph.title}\nx-axis: ${state.graph.x}\ny-axis: ${state.graph.y}\nBest fit: ${state.graph.fit}\nData-book series added: ${Object.keys(SERIES).filter(k=>state.graph.db[k]).map(k=>SERIES[k].label).join(", ")||"none"}\n`; }
+    else o+=(state.answers[q.id]||"(no answer)")+"\n";
+    o+="\n";
+  });
+  if(MS) o+=`Criterion B: ${$("sumB").textContent}/16 (${$("lvlB").textContent})\nCriterion C: ${$("sumC").textContent}/16 (${$("lvlC").textContent})\n`;
+  if(state.feedback) o+=`\nFeedback: ${state.feedback}\n`;
+  return o;
+}
+function reportNode(){
+  const img=$("graph")?$("graph").toDataURL("image/png"):"";
+  const rows=state.table.rows.filter(r=>r.some(v=>String(v).trim())).map(r=>`<tr>${r.map(v=>`<td>${esc(v)}</td>`).join("")}</tr>`).join("");
+  const when=state.submittedAt?new Date(state.submittedAt).toLocaleString():new Date().toLocaleString();
+  const marked=MS && Q.some(q=>hasMark(q.id));
+  const qs=Q.map(q=>{
+    let body;
+    if(q.widget==="table") body=`<table class="r-t"><tr>${state.table.head.map((h,i)=>`<th>${esc(h||["(no heading)","Trial 1","Trial 2","Trial 3","Mean"][i])}</th>`).join("")}</tr>${rows||'<tr><td colspan="5">(no data)</td></tr>'}</table>`;
+    else if(q.widget==="graph") body=img?`<img src="${img}" alt="Graph" style="width:100%;border:1px solid #d8deea;border-radius:6px">`:"";
+    else body=`<div class="r-a">${esc(state.answers[q.id]||"(no answer)")}</div>`;
+    const mk=hasMark(q.id)?`<span class="r-mk">${state.marks[q.id]} / ${q.max}</span>`:`<span class="r-mk">[${q.max}]</span>`;
+    return `<div class="r-q"><div class="r-h"><b>${q.id}</b>${mk}</div><div class="r-p">${q.text}</div>${body}</div>`;
+  });
+  const el=document.createElement("div");
+  el.innerHTML=`<style>
+    .rep{font-family:Arial,Helvetica,sans-serif;color:#16203a;font-size:12px;line-height:1.5;background:#fff;width:720px;padding:6px 10px}
+    .rep h1{font-size:20px;margin:0 0 2px}.rep .sub{color:#5a6580;font-size:11px;margin-bottom:10px}
+    .rep .meta{display:flex;gap:18px;border:1px solid #d8deea;border-radius:6px;padding:8px 10px;margin-bottom:12px}
+    .rep h2{font-size:14px;color:#0d6e6a;border-bottom:2px solid #0d6e6a;padding-bottom:3px;margin:14px 0 6px}
+    .r-q{border-bottom:1px solid #e3e7f0;padding:8px 0;page-break-inside:avoid;break-inside:avoid}
+    .r-h{display:flex;justify-content:space-between;color:#0d6e6a}.r-mk{font-family:monospace;color:#16203a}
+    .r-p p{margin:2px 0 4px;color:#5a6580}.r-a{white-space:pre-wrap;background:#f6f7fb;border-radius:4px;padding:6px 8px}
+    .r-t{border-collapse:collapse;width:100%}.r-t td,.r-t th{border:1px solid #c9d0e0;padding:3px 6px;text-align:center}.r-t th{background:#eef1fa}
+  </style>
+  <div class="rep">
+    <h1>Boiling Points of Homologous Series</h1>
+    <div class="sub">MYP Sciences · Criteria B &amp; C practice · Submitted ${esc(when)}</div>
+    <div class="meta"><span><b>Name:</b> ${esc(state.name||"—")}</span><span><b>Class:</b> ${esc(state.cls||"—")}</span>
+      ${marked?`<span><b>B:</b> ${$("sumB").textContent}/16 (${$("lvlB").textContent})</span><span><b>C:</b> ${$("sumC").textContent}/16 (${$("lvlC").textContent})</span>`:""}</div>
+    <h2>Criterion B · Inquiring and designing</h2>${qs.slice(0,5).join("")}
+    <h2>Criterion C · Processing and evaluating</h2>${qs.slice(5).join("")}
+    ${state.feedback?`<h2>Feedback and target</h2><div class="r-a">${esc(state.feedback)}</div>`:""}
+  </div>`;
+  return el;
+}
+function fileBase(){ return "boiling-points-"+((state.name||"student").trim().replace(/[^\w-]+/g,"-").toLowerCase()||"student"); }
+let downloads=null;
+(async()=>{ try{ if(window.claude && claude.use){ downloads=await claude.use("downloads"); } }catch(e){} })();
+async function saveFile(filename,blob){
+  if(downloads){
+    try{ await downloads.save({filename,data:blob}); toast("Saved "+filename); return true; }
+    catch(e){ if(e&&e.code==="declined"){ toast("Download cancelled"); return false; } if(e&&e.code==="rate_limited"){ toast("Please wait a moment, then try again"); return false; } }
+  }
+  try{ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},4000); return true; }
+  catch(e){ return false; }
+}
+$("pdfBtn").addEventListener("click",async()=>{
+  if(typeof html2pdf==="undefined"){ $("pdfMsg").textContent="The PDF maker did not load. Check your internet connection and reload, or use Copy answers as text."; return; }
+  const btn=$("pdfBtn"); btn.disabled=true; btn.textContent="Making your PDF…";
+  const host=document.createElement("div"); host.style.cssText="position:fixed;left:-10000px;top:0;background:#fff";
+  host.appendChild(reportNode()); document.body.appendChild(host);
+  try{
+    const blob=await html2pdf().set({margin:[10,10,12,10],image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"],avoid:".r-q"}}).from(host.firstChild).outputPdf("blob");
+    const ok=await saveFile(fileBase()+(MS?"-marked":"")+".pdf",blob);
+    $("pdfMsg").textContent=ok?"If no file appeared, check your Downloads folder. Send the PDF to your teacher.":"The download did not start. Use Copy answers as text instead.";
+  }catch(e){ $("pdfMsg").textContent="Could not make the PDF. Use Copy answers as text instead."; }
+  finally{ host.remove(); btn.disabled=false; btn.textContent=MS?"Download my marked PDF":"Download my answers (PDF)"; }
+});
+$("copyText").addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(plainText()); toast("Answers copied. Paste them into a document."); }catch(e){ toast("Copy was blocked. Select and copy your answers manually."); } });
+
+/* ===================== INIT ===================== */
+fillN(); sim.n=2; $("nSel").value=2; showCompound(); setup();
+renderQuestions(); applyLock(); updateTotals();
+requestAnimationFrame(step);
+if(state.msCode) tryUnlock(state.msCode,true);
+</script>
+</body>
+</html>
